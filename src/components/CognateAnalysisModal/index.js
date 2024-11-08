@@ -259,6 +259,7 @@ const computeComplexDistanceMutation = gql`
       debug_flag: $debugFlag
     ) {
       result
+      xlsx_url
       minimum_spanning_tree
       embedding_2d
       embedding_3d
@@ -2979,7 +2980,15 @@ class CognateAnalysisModal extends React.Component {
             ) && this.state.result !== null && ! this.state.cleanResult && (
             <Modal.Content style={{ maxWidth: "100%", overflowX: "auto" }}>
 
-              { ! /complex_distance$/.test(mode) && (
+              { /complex_distance$/.test(mode) && (
+                <div className="lingvo-cognate-results">
+                  { this.state.result.length > 0 && (
+                    <div className="lingvo-cognate-text" style={{ marginLeft: "24px" }}>
+                      <a href={this.state.xlsx_url}>{this.context("XLSX-exported analysis results")}</a>
+                    </div>
+                  )}
+                </div>
+              ) || (
                 <>
                   <h3 className="lingvo-cognate-header-results">{this.context("Analysis results")}:</h3>
 
