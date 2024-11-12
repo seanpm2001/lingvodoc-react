@@ -29,6 +29,7 @@ import search from "./search";
 import snackbar from "./snackbar";
 import statistics from "./statistics";
 import task from "./task";
+import upload from "./upload";
 import user from "./user";
 
 export default {
@@ -57,6 +58,7 @@ export default {
   phonology,
   apolloClient,
   statistics,
+  upload,
   ban,
   modals,
   createOrganization,

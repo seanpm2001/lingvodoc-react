@@ -16,6 +16,7 @@ import { openPerspectivePropertiesModal } from "ducks/perspectiveProperties";
 import { openRoles } from "ducks/roles";
 import { openSaveDictionaryModal } from "ducks/saveDictionary";
 import { openStatistics } from "ducks/statistics";
+import { openUploadModal } from "ducks/upload";
 import TranslationContext from "Layout/TranslationContext";
 
 const queryPerspectivePath = gql`
@@ -108,6 +109,7 @@ class PerspectivePath extends React.Component {
     const roles_str = this.context("Roles").toLowerCase();
     const properties_str = this.context("Properties").toLowerCase();
     const statistics_str = this.context("Statistics").toLowerCase();
+    const upload_str = this.context("Upload").toLowerCase();
 
     return (
       <Header as="h2" className={className}>
@@ -169,6 +171,14 @@ class PerspectivePath extends React.Component {
                         text={this.context("Statistics")}
                         onClick={() =>
                           actions.openStatistics(id, "perspective", `'${T(e.translations)}' ${statistics_str}`)
+                        }
+                      />
+                      <Dropdown.Item
+                        key="upload"
+                        icon={<i className="lingvo-icon lingvo-icon_stats" />}
+                        text={this.context("Upload")}
+                        onClick={() =>
+                          actions.openUploadModal(id, `'${T(e.translations)}' ${upload_str}`)
                         }
                       />
                     </Dropdown.Menu>
@@ -310,7 +320,8 @@ export default compose(
           openPerspectivePropertiesModal,
           openRoles,
           openSaveDictionaryModal,
-          openStatistics
+          openStatistics,
+          openUploadModal
         },
         dispatch
       )

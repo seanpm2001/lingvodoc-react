@@ -21,6 +21,7 @@ import PlayerModal from "components/PlayerModal";
 import RolesModal from "components/RolesModal";
 import SaveDictionary from "components/SaveDictionaryModal";
 import StatisticsModal from "components/StatisticsModal";
+import UploadModal from "components/UploadModal";
 import smoothScroll from "utils/smoothscroll";
 
 import NavBar from "./NavBar";
@@ -73,6 +74,7 @@ class Layout extends React.Component {
           <PhonologyModal />
           <ConvertEafModal />
           <StatisticsModal />
+          <UploadModal />
           <BanModal />
           <CreateFieldModal />
           <RolesModal />

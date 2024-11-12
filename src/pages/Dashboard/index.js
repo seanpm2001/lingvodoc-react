@@ -16,6 +16,7 @@ import { openPerspectivePropertiesModal } from "ducks/perspectiveProperties";
 import { openRoles } from "ducks/roles";
 import { openSaveDictionaryModal } from "ducks/saveDictionary";
 import { openStatistics } from "ducks/statistics";
+import { openUploadModal } from "ducks/upload";
 import TranslationContext from "Layout/TranslationContext";
 import { dictionaryQuery } from "pages/DialeqtImport";
 import { compositeIdToString } from "utils/compositeId";
