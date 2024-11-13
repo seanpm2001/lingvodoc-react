@@ -35,6 +35,7 @@ export const queryAvailablePerspectives = gql`
   query availablePerspectives($dictionary_id: LingvodocID!) {
     dictionary(id: $dictionary_id) {
       id
+      category
       perspectives {
         id
         parent_id
@@ -89,6 +90,7 @@ class PerspectivePath extends React.Component {
     const dictionary_id_tree = tree[1].id;
 
     const {
+      category,
       perspectives,
       additional_metadata: { license }
     } = queryAvailablePerspectives.dictionary;
@@ -173,14 +175,16 @@ class PerspectivePath extends React.Component {
                           actions.openStatistics(id, "perspective", `'${T(e.translations)}' ${statistics_str}`)
                         }
                       />
-                      <Dropdown.Item
-                        key="upload"
-                        icon={<i className="lingvo-icon lingvo-icon_stats" />}
-                        text={this.context("Upload")}
-                        onClick={() =>
-                          actions.openUploadModal(id, `'${T(e.translations)}' ${upload_str}`)
-                        }
-                      />
+                      {user.id !== undefined && category == 1 && (
+                        <Dropdown.Item
+                          key="upload"
+                          icon={<i className="lingvo-icon lingvo-icon_published" />}
+                          text={this.context("Upload")}
+                          onClick={() =>
+                            actions.openUploadModal(id, `'${T(e.translations)}' ${upload_str}`)
+                          }
+                        />
+                      )}
                     </Dropdown.Menu>
                   </Dropdown>
                 ) : index === tree.length - 2 ? (
