@@ -1,9 +1,8 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { connect } from "react-redux";
-import { Button, Divider, Header, Loader, Message, Modal } from "semantic-ui-react";
+import { Button, Loader, Message, Modal } from "semantic-ui-react";
 import { gql } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
-import { isEqual } from "lodash";
 import PropTypes from "prop-types";
 import { branch, compose, onlyUpdateForKeys, renderNothing, withProps } from "recompose";
 import { bindActionCreators } from "redux";
@@ -15,7 +14,9 @@ const getUploadDate = gql`
   query getUploadDate($id: LingvodocID!) {
     perspective(id: $id) {
       id
-      additional_metadata
+      additional_metadata { 
+        uploaded_at 
+      }
     }
   }
 `;
@@ -29,10 +30,11 @@ const uploadPerspective = gql`
 `;
 
 const Upload = props => {
-  const getTranslation = useContext(TranslationContext);
 
-  const { id, title, data, actions, uploadPerspective } = props;
-  const { loading, error, perspective: { additional_metadata } } = data;
+  const [uploaded, setUploaded] = useState(false);
+  const getTranslation = useContext(TranslationContext);
+  const { id, title, data, actions, user, uploadPerspective } = props;
+  const { loading, error, refetch, perspective } = data;
 
   if (loading) {
     return (
@@ -55,6 +57,8 @@ const Upload = props => {
       </Modal>
     );
   }
+  
+  const { additional_metadata: { uploaded_at }} = perspective;
 
   return (
     <Modal
@@ -62,7 +66,7 @@ const Upload = props => {
       onClose={actions.closeUploadModal}
       open
       dimmer
-      size="fullscreen"
+      size="50%"
       className="lingvo-modal2"
     >
       <Modal.Header>{title}</Modal.Header>
@@ -70,18 +74,29 @@ const Upload = props => {
         <p>
           {getTranslation("Uploaded at")}
           {": "}
-          { additional_metadata.uploaded_at
-            ? new Date(additional_metadata.uploaded_at * 1e3).toLocaleString()
+          { uploaded_at
+            ? new Date(uploaded_at).toLocaleString()
             : "<never>"
           }
         </p>
       </Modal.Content>
       <Modal.Actions>
-        <Button
-          content={getTranslation("Upload")}
-          onClick={uploadPerspective}
-          className="lingvo-button-green lingvo-perspective-button"
-        />
+        { user.id == 1 && (
+          <Button
+            content={getTranslation("Upload")}
+            onClick={() => {
+              uploadPerspective({
+                variables: { id }
+              }).then(() => {
+                refetch();
+                setUploaded(true);
+              })
+            }}
+            disabled={uploaded}
+            className="lingvo-button-greenest"
+            style={{float: 'left'}}
+          />
+        )}
         <Button
           content={getTranslation("Close")}
           onClick={actions.closeUploadModal}
@@ -105,12 +120,15 @@ Upload.propTypes = {
 
 export default compose(
   connect(
+    state => state.user,
+  ),
+  connect(
     state => state.upload,
     dispatch => ({ actions: bindActionCreators({ closeUploadModal }, dispatch) })
   ),
   branch(({ upload }) => !upload, renderNothing),
   withProps(({ upload: { id, title } }) => ({ id, title })),
+  graphql(getUploadDate, { options: { fetchPolicy: "network-only" }}),
   graphql(uploadPerspective, { name: "uploadPerspective" }),
-  graphql(getUploadDate),
-  onlyUpdateForKeys(["upload", "data"])
+  onlyUpdateForKeys(["upload", "uploaded", "data"])
 )(Upload);
