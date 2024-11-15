@@ -1,10 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { Button, Loader, Message, Modal, Icon } from "semantic-ui-react";
 import { gql } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import PropTypes from "prop-types";
-import { branch, compose, onlyUpdateForKeys, renderNothing, withProps } from "recompose";
+import { branch, compose, renderNothing, withProps } from "recompose";
 import { bindActionCreators } from "redux";
 
 import { closeUploadModal, updateUploadModal } from "ducks/upload";
@@ -21,22 +21,12 @@ const getUploadDate = gql`
   }
 `;
 
-/*
-const uploadPerspective = gql`
-  mutation uploadPerspective($id: LingvodocID!, $debugFlag: Boolean) {
-    tsakorpus(perspective_id: $id, debug_flag: $debugFlag) {
-      triumph
-    }
-  }
-`;
-*/
-
 const Upload = props => {
 
   const getTranslation = useContext(TranslationContext);
   const { id, title, data, actions, user, uploading, uploadPerspective } = props;
   const { loading, error, refetch, perspective } = data;
-
+  useEffect(() => { refetch(); }, [uploading]);
   if (loading) {
     return (
       <Modal open dimmer size="fullscreen" closeOnDimmerClick={false} closeIcon className="lingvo-modal2">
@@ -142,7 +132,5 @@ export default compose(
   ),
   branch(({ upload }) => !upload, renderNothing),
   withProps(({ upload: { id, title, uploading, uploadPerspective } }) => ({ id, title, uploading, uploadPerspective })),
-  graphql(getUploadDate, { options: { fetchPolicy: "network-only" }}),
-  //graphql(uploadPerspective, { name: "uploadPerspective" }),
-  onlyUpdateForKeys(["upload", "data"])
+  graphql(getUploadDate, { options: { fetchPolicy: "network-only" }})
 )(Upload);
