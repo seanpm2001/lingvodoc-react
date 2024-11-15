@@ -1201,7 +1201,7 @@ const ModeSelector = compose(
           </Menu.Item>
         ))}
         {tsakorpusFlag && (
-          <Menu.Item key="corpus_search" href={`http://83.149.198.78:8080/${id[0]}_${id[1]}/search`}>
+          <Menu.Item key="corpus_search" href={`http://83.149.198.78/${id[0]}_${id[1]}/search`}>
             {getTranslation("Corpus search")}
           </Menu.Item>
         )}
