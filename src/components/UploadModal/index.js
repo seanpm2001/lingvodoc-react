@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { connect } from "react-redux";
-import { Button, Loader, Message, Modal } from "semantic-ui-react";
+import { Button, Loader, Message, Modal, Icon } from "semantic-ui-react";
 import { gql } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import PropTypes from "prop-types";
@@ -21,6 +21,7 @@ const getUploadDate = gql`
   }
 `;
 
+/*
 const uploadPerspective = gql`
   mutation uploadPerspective($id: LingvodocID!, $debugFlag: Boolean) {
     tsakorpus(perspective_id: $id, debug_flag: $debugFlag) {
@@ -28,10 +29,11 @@ const uploadPerspective = gql`
     }
   }
 `;
+*/
 
 const Upload = props => {
 
-  const [uploaded, setUploaded] = useState(false);
+  const [uploading, setUploading] = useState(props.uploading); // uploading value goes from the parent component
   const getTranslation = useContext(TranslationContext);
   const { id, title, data, actions, user, uploadPerspective } = props;
   const { loading, error, refetch, perspective } = data;
@@ -78,23 +80,33 @@ const Upload = props => {
             ? new Date(uploaded_at).toLocaleString()
             : "<never>"
           }
+          { user.id == 1 && (
+            <Button
+              content={uploading ? (
+                <span>
+                  {getTranslation("Uploading")}... <Icon name="spinner" loading />
+                </span>
+              ) : (
+                getTranslation(uploaded_at ? "Refresh" : "Upload")
+              )}
+              onClick={() => {
+                setUploading(true);
+                uploadPerspective(title);
+              }}
+              disabled={uploading}
+              className="lingvo-button-greenest"
+              style={{marginLeft: "1.5em"}}
+            />
+          )}
         </p>
       </Modal.Content>
       <Modal.Actions>
-        { user.id == 1 && (
+        { user.id !== undefined && uploaded_at && (
           <Button
-            content={getTranslation("Upload")}
-            onClick={() => {
-              uploadPerspective({
-                variables: { id }
-              }).then(() => {
-                refetch();
-                setUploaded(true);
-              })
-            }}
-            disabled={uploaded}
-            className="lingvo-button-greenest"
+            content={getTranslation("Uploaded corpora")}
+            className="lingvo-button-violet"
             style={{float: 'left'}}
+            onClick={()=> window.open(`http://83.149.198.78/${id[0]}_${id[1]}/search`, "_blank")}
           />
         )}
         <Button
@@ -110,6 +122,8 @@ const Upload = props => {
 Upload.propTypes = {
   id: PropTypes.array.isRequired,
   title: PropTypes.string.isRequired,
+  uploading: PropTypes.bool.isRequired,
+  uploadPerspective: PropTypes.func.isRequired,
   data: PropTypes.shape({
     loading: PropTypes.bool.isRequired
   }).isRequired,
@@ -127,8 +141,8 @@ export default compose(
     dispatch => ({ actions: bindActionCreators({ closeUploadModal }, dispatch) })
   ),
   branch(({ upload }) => !upload, renderNothing),
-  withProps(({ upload: { id, title } }) => ({ id, title })),
+  withProps(({ upload: { id, title, uploading, uploadPerspective } }) => ({ id, title, uploading, uploadPerspective })),
   graphql(getUploadDate, { options: { fetchPolicy: "network-only" }}),
-  graphql(uploadPerspective, { name: "uploadPerspective" }),
-  onlyUpdateForKeys(["upload", "uploaded", "data"])
+  //graphql(uploadPerspective, { name: "uploadPerspective" }),
+  onlyUpdateForKeys(["upload", "uploading", "data"])
 )(Upload);

@@ -16,7 +16,7 @@ import { openPerspectivePropertiesModal } from "ducks/perspectiveProperties";
 import { openRoles } from "ducks/roles";
 import { openSaveDictionaryModal } from "ducks/saveDictionary";
 import { openStatistics } from "ducks/statistics";
-import { openUploadModal } from "ducks/upload";
+import { openUploadModal, updateUploadModal } from "ducks/upload";
 import TranslationContext from "Layout/TranslationContext";
 
 const queryPerspectivePath = gql`
@@ -48,6 +48,14 @@ export const queryAvailablePerspectives = gql`
   }
 `;
 
+const uploadPerspective = gql`
+  mutation uploadPerspective($id: LingvodocID!, $debugFlag: Boolean) {
+    tsakorpus(perspective_id: $id, debug_flag: $debugFlag) {
+      triumph
+    }
+  }
+`;
+
 const license_dict_translator = getTranslation => ({
   proprietary: [getTranslation("Proprietary"), null],
   "cc-by-4.0": ["CC-BY-4.0", "https://creativecommons.org/licenses/by/4.0/legalcode"],
@@ -59,6 +67,29 @@ const license_dict_translator = getTranslation => ({
  * Perspective breadcrumb component.
  */
 class PerspectivePath extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      uploading: false
+    };
+
+    this.uploadPerspectiveWrapper = this.uploadPerspectiveWrapper.bind(this);
+  };
+
+  uploadPerspectiveWrapper(title) {
+    const {id, actions, uploadPerspective} = this.props;
+
+    this.setState({ uploading: true });
+
+    uploadPerspective({
+      variables: { id }
+    }).then(() => {
+      this.setState({ uploading: false });
+      actions.updateUploadModal(false);
+    })
+  }
+
   render() {
     /* eslint-disable no-shadow */
     const {
@@ -181,7 +212,11 @@ class PerspectivePath extends React.Component {
                           icon={<i className="lingvo-icon lingvo-icon_published" />}
                           text={this.context("Upload")}
                           onClick={() =>
-                            actions.openUploadModal(id, `'${T(e.translations)}' ${upload_str}`)
+                            actions.openUploadModal(
+                              id,
+                              `'${T(e.translations)}' ${upload_str}`,
+                              this.state.uploading,
+                              this.uploadPerspectiveWrapper)
                           }
                         />
                       )}
@@ -299,6 +334,7 @@ PerspectivePath.propTypes = {
   dictionary_id: PropTypes.array.isRequired,
   queryPerspectivePath: PropTypes.object.isRequired,
   queryAvailablePerspectives: PropTypes.object.isRequired,
+  uploadPerspective: PropTypes.func.isRequired,
   mode: PropTypes.string.isRequired,
   className: PropTypes.string,
   actions: PropTypes.object.isRequired,
@@ -325,7 +361,8 @@ export default compose(
           openRoles,
           openSaveDictionaryModal,
           openStatistics,
-          openUploadModal
+          openUploadModal,
+          updateUploadModal
         },
         dispatch
       )
@@ -338,5 +375,6 @@ export default compose(
   graphql(queryAvailablePerspectives, {
     name: "queryAvailablePerspectives",
     options: props => ({ variables: { dictionary_id: props.dictionary_id } })
-  })
+  }),
+  graphql(uploadPerspective, { name: "uploadPerspective" })
 )(PerspectivePath);
