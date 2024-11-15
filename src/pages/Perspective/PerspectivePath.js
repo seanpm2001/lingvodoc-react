@@ -77,7 +77,7 @@ class PerspectivePath extends React.Component {
     this.uploadPerspectiveWrapper = this.uploadPerspectiveWrapper.bind(this);
   };
 
-  uploadPerspectiveWrapper(title) {
+  uploadPerspectiveWrapper() {
     const {id, actions, uploadPerspective} = this.props;
 
     this.setState({ uploading: true });

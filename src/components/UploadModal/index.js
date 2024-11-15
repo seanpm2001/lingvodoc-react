@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 import { branch, compose, onlyUpdateForKeys, renderNothing, withProps } from "recompose";
 import { bindActionCreators } from "redux";
 
-import { closeUploadModal } from "ducks/upload";
+import { closeUploadModal, updateUploadModal } from "ducks/upload";
 import TranslationContext from "Layout/TranslationContext";
 
 const getUploadDate = gql`
@@ -33,9 +33,8 @@ const uploadPerspective = gql`
 
 const Upload = props => {
 
-  const [uploading, setUploading] = useState(props.uploading); // uploading value goes from the parent component
   const getTranslation = useContext(TranslationContext);
-  const { id, title, data, actions, user, uploadPerspective } = props;
+  const { id, title, data, actions, user, uploading, uploadPerspective } = props;
   const { loading, error, refetch, perspective } = data;
 
   if (loading) {
@@ -90,8 +89,8 @@ const Upload = props => {
                 getTranslation(uploaded_at ? "Refresh" : "Upload")
               )}
               onClick={() => {
-                setUploading(true);
-                uploadPerspective(title);
+                actions.updateUploadModal(true);
+                uploadPerspective();
               }}
               disabled={uploading}
               className="lingvo-button-greenest"
@@ -128,7 +127,8 @@ Upload.propTypes = {
     loading: PropTypes.bool.isRequired
   }).isRequired,
   actions: PropTypes.shape({
-    closeUploadModal: PropTypes.func.isRequired
+    closeUploadModal: PropTypes.func.isRequired,
+    updateUploadModal: PropTypes.func.isRequired
   }).isRequired
 };
 
@@ -138,11 +138,11 @@ export default compose(
   ),
   connect(
     state => state.upload,
-    dispatch => ({ actions: bindActionCreators({ closeUploadModal }, dispatch) })
+    dispatch => ({ actions: bindActionCreators({ closeUploadModal, updateUploadModal }, dispatch) })
   ),
   branch(({ upload }) => !upload, renderNothing),
   withProps(({ upload: { id, title, uploading, uploadPerspective } }) => ({ id, title, uploading, uploadPerspective })),
   graphql(getUploadDate, { options: { fetchPolicy: "network-only" }}),
   //graphql(uploadPerspective, { name: "uploadPerspective" }),
-  onlyUpdateForKeys(["upload", "uploading", "data"])
+  onlyUpdateForKeys(["upload", "data"])
 )(Upload);
