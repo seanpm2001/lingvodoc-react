@@ -43,7 +43,7 @@ const Upload = props => {
         <Loader>{`${getTranslation("Loading")}...`}</Loader>
       </Modal>
     );
-  } else if (error) {
+  } else if (error || uploading === null) {
     return (
       <Modal closeIcon onClose={actions.closeUploadModal} open className="lingvo-modal2">
         <Modal.Header>{title}</Modal.Header>

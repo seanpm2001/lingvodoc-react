@@ -84,10 +84,16 @@ class PerspectivePath extends React.Component {
 
     uploadPerspective({
       variables: { id }
-    }).then(() => {
-      this.setState({ uploading: false });
-      actions.updateUploadModal(false);
-    })
+    }).then(
+      ({ data }) => {
+        this.setState({ uploading: false });
+        actions.updateUploadModal(data.tsakorpus.triumph ? false : null);
+      },
+      () => {
+        this.setState({ uploading: false });
+        actions.updateUploadModal(null);
+      }
+    )
   }
 
   render() {
